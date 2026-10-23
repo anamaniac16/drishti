@@ -256,6 +256,8 @@
     this.stations = [];
     this.beams = [];
     this.flashes = [];
+    this.tracks = {};
+    this.target = null;
     this.tween = null;
     this.follow = null;
     this.clock = new T.Clock();
@@ -509,6 +511,56 @@
     this.flashes.push({ cone, ring, t: 0 });
   };
 
+  // ------------------------------------------------------------------
+  // Single-target mission overlays: crosshair on the target, and the
+  // ground track of every pass over it (fades in, can be struck out).
+  // ------------------------------------------------------------------
+  Globe.prototype.setTarget = function (lat, lon) {
+    if (this.target) this.scene.remove(this.target);
+    this.target = null;
+    if (lat === null || lat === undefined) return;
+    const mat = (col, op) => new T.MeshBasicMaterial({ color: col, transparent: true, opacity: op, side: T.DoubleSide, depthWrite: false });
+    const g = new T.Group();
+    const ring = new T.Mesh(new T.RingGeometry(0.017, 0.0205, 56), mat(0xffffff, 0.95));
+    const dot = new T.Mesh(new T.CircleGeometry(0.005, 24), mat(0xff9f43, 1));
+    g.add(ring, dot);
+    for (const [x, y, w, h] of [[0.03, 0, 0.014, 0.002], [-0.03, 0, 0.014, 0.002], [0, 0.03, 0.002, 0.014], [0, -0.03, 0.002, 0.014]]) {
+      const tick = new T.Mesh(new T.PlaneGeometry(w, h), mat(0xffffff, 0.9));
+      tick.position.set(x, y, 0);
+      g.add(tick);
+    }
+    const p = ll(lat, lon, 1.0045);
+    g.position.copy(p);
+    g.lookAt(p.clone().multiplyScalar(2));
+    g.userData.ring = ring;
+    this.scene.add(g);
+    this.target = g;
+  };
+  // item: { id, pts: [[lat, lon], ...], colour }
+  Globe.prototype.addTrack = function (item) {
+    const pts = item.pts.map(([la, lo]) => ll(la, lo, 1.0035));
+    const line = new T.Line(new T.BufferGeometry().setFromPoints(pts), new T.LineBasicMaterial({ color: new T.Color(item.colour), transparent: true, opacity: 0, depthWrite: false }));
+    this.scene.add(line);
+    this.tracks[item.id] = { line, pts, colour: item.colour, tube: null, want: 0.85 };
+  };
+  // state: 'kept' | 'out' | 'spare' | 'chosen'
+  Globe.prototype.setTrackState = function (id, state) {
+    const t = this.tracks[id];
+    if (!t) return;
+    if (t.tube) { this.scene.remove(t.tube); t.tube = null; }
+    if (state === 'out') { t.line.material.color.set(0xff5d73); t.want = 0.18; }
+    else { t.line.material.color.set(t.colour); t.want = state === 'spare' ? 0.35 : 0.9; }
+    if (state === 'chosen') {
+      const curve = new T.CatmullRomCurve3(t.pts);
+      t.tube = new T.Mesh(new T.TubeGeometry(curve, 90, 0.0024, 6, false), new T.MeshBasicMaterial({ color: new T.Color(t.colour), transparent: true, opacity: 0.95, depthWrite: false }));
+      this.scene.add(t.tube);
+    }
+  };
+  Globe.prototype.clearTracks = function () {
+    for (const id in this.tracks) { const t = this.tracks[id]; this.scene.remove(t.line); if (t.tube) this.scene.remove(t.tube); }
+    this.tracks = {};
+  };
+
   Globe.prototype.flyTo = function (lat, lon, dist, ms) {
     const from = this.camera.position.clone();
     const to = ll(lat, lon, dist || this.camera.position.length());
@@ -565,6 +617,11 @@
       const s = urgent ? 1 + 0.6 * ((now * 1.3) % 1) : 1;
       u.ring.scale.setScalar(s);
       u.ring.material.opacity = urgent ? 0.9 * (1 - ((now * 1.3) % 1)) : 0.7;
+    }
+    if (this.target) this.target.userData.ring.scale.setScalar(1 + 0.18 * Math.sin(now * 4));
+    for (const id in this.tracks) {
+      const m = this.tracks[id].line.material;
+      m.opacity += (this.tracks[id].want - m.opacity) * Math.min(1, dt * 5);
     }
     this.flashes = this.flashes.filter((f) => {
       f.t += dt;
