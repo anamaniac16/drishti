@@ -31,6 +31,21 @@ When a source can't be reached, the app says so in the top bar and switches to a
 
 ## What you can do
 
+- **📍 Click a place:** Click anywhere over India and its seas (or on a pin) and DRISHTI does
+  the whole job for that one spot, step by step, so you can watch the AI work:
+  1. **Clouds:** live hourly cloud forecast for that exact spot.
+  2. **Routes:** propagates every satellite's orbit 48 hours ahead, finds every overflight and
+     draws each pass's ground track on the globe.
+  3. **Filter:** a funnel that strikes out passes one rule at a time, with the reason on each:
+     too steep for the camera, in the dark, likely cloudy (neural network), not worth a shot
+     (fuzzy priority), or the satellite is busy with something more valuable. The best pass of
+     each satellite becomes a shot, and the panel explains why the winner won (fuzzy inputs and
+     the rules that fired).
+  4. **Capture:** the satellites fly the chosen passes and take the pictures.
+  5. **Check:** a fuzzy cloud mask scans every picture pixel by pixel (bright AND grey = cloud,
+     colourful = ground, white on a clear day too = snow, not cloud) and rejects cloudy ones.
+  6. **Deliver:** the best picture is sent down at the satellite's next ground-station contact,
+     with the time from click to picture.
 - **Plan:** See every request on a 3D globe and every pass on a 48-hour timeline. Plan it yourself
   by clicking passes, then press **AI plan** and watch the genetic algorithm evolve a better one.
 - **Add requests:** Pick a type and urgency, click anywhere over India, and it gets fitted into the plan.
@@ -75,6 +90,7 @@ js/core.js           orbits, access windows, neural network, fuzzy system, genet
 js/live.js           live data with timeouts and fallbacks
 js/globe.js          Three.js globe, satellites, ground stations, pins
 js/app.js            app logic, timeline, scoreboard, brain view
+js/mission.js        click a place: routes, filter funnel, capture, fuzzy cloud mask, delivery
 js/geo-data.js       coastlines and borders (Natural Earth 1:50m)
 tools/plan-test.js   headless run of a full planning day
 ```
