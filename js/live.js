@@ -117,11 +117,15 @@
   }
 
   // --- NASA GIBS: a recent true-colour image of a target ---------------------
-  function gibsUrl(lat, lon, ms, km) {
+  // sameDay: the image from the day of `ms` (for past days); otherwise the
+  // previous day's (today's is not processed yet). Terra MODIS crosses India
+  // around 10:30 local time, close to the optical satellites' passes.
+  function gibsUrl(lat, lon, ms, km, sameDay) {
     const d = (km || 60) / 111;
-    const date = ymd(ms - 86400000);
+    const date = ymd(sameDay ? ms + 5.5 * 3600000 : ms - 86400000);
+    const layer = sameDay ? 'MODIS_Terra_CorrectedReflectance_TrueColor' : 'VIIRS_SNPP_CorrectedReflectance_TrueColor';
     return 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
-      '&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&STYLES=&CRS=EPSG:4326' +
+      `&LAYERS=${layer}&STYLES=&CRS=EPSG:4326` +
       `&BBOX=${(lat - d).toFixed(3)},${(lon - d).toFixed(3)},${(lat + d).toFixed(3)},${(lon + d).toFixed(3)}` +
       `&WIDTH=256&HEIGHT=256&FORMAT=image/jpeg&TIME=${date}`;
   }

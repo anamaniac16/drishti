@@ -302,12 +302,10 @@
     S.shown = 'ai';
     S.gaHist = hist;
     const a = score(plan), f = score(S.plans.fcfs);
-    const key = S.day === 'past' ? 'actual' : 'expected';
-    const gain = f[key] > 0 ? (a[key] - f[key]) / f[key] : 0;
-    $('claimNum').textContent = (gain >= 0 ? '+' : '') + Math.round(gain * 100) + '%';
-    $('claimTxt').textContent = S.day === 'past'
-      ? `more cloud-free images than first-come-first-served, judged by the clouds that actually happened (${a.actual} vs ${f.actual}).`
-      : `more usable images expected than first-come-first-served (${a.expected.toFixed(1)} vs ${f.expected.toFixed(1)}), and ${a.urgent} urgent targets covered.`;
+    const good = (x) => (S.day === 'past' ? x.actual : x.expected);
+    const rate = (x) => (x.shots ? good(x) / x.shots : 0);
+    $('claimNum').textContent = Math.round(rate(a) * 100) + '%';
+    $('claimTxt').textContent = `of the AI's photos ${S.day === 'past' ? 'came back usable (checked against the real clouds)' : 'are expected to be usable'}, vs ${Math.round(rate(f) * 100)}% the usual way. Wasted shots: ${Math.round(a.shots - good(a))} vs ${Math.round(f.shots - good(f))}.`;
     $('claim').hidden = false;
     toast(`<b>AI plan ready</b> · ${plan.length} shots for ${a.served} targets <span class="muted">(${S.aiLabel})</span>`, 'good');
     renderAll();
@@ -397,17 +395,203 @@
     img.width = size; img.height = size;
     img.src = L.gibsUrl(r.lat, r.lon, o ? o.t : S.startMs, 60);
     img.onerror = () => {
-      const c = document.createElement('canvas');
-      c.width = c.height = 64;
-      const g = c.getContext('2d');
-      const gr = g.createLinearGradient(0, 0, 64, 64);
-      gr.addColorStop(0, '#2f7d5b'); gr.addColorStop(1, '#c9a86a');
-      g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
-      g.font = '28px serif'; g.textAlign = 'center'; g.fillText(ICONS[r.type] || '📍', 32, 42);
+      const c = paintPhoto(r, 0, false, null);
       c.className = img.className;
       img.replaceWith(c);
     };
     return img;
+  }
+
+  // ------------------------------------------------------------------
+  // Painted "satellite photo" used when real imagery can't be loaded:
+  // ground drawn from the target type, clouds from the measured cloud cover.
+  // ------------------------------------------------------------------
+  function hashStr(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return h >>> 0; }
+  function noise2(seed) {
+    const r = D.mulberry32(seed), N = 32, v = new Float32Array(N * N);
+    for (let i = 0; i < v.length; i++) v[i] = r();
+    const at = (x, y) => v[((y % N + N) % N) * N + ((x % N + N) % N)];
+    const n = (x, y) => {
+      const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
+      const u = fx * fx * (3 - 2 * fx), w = fy * fy * (3 - 2 * fy);
+      return (at(x0, y0) * (1 - u) + at(x0 + 1, y0) * u) * (1 - w) + (at(x0, y0 + 1) * (1 - u) + at(x0 + 1, y0 + 1) * u) * w;
+    };
+    return (x, y, oct) => { let a = 0.5, f = 1, s = 0, t = 0; for (let o = 0; o < (oct || 4); o++) { s += a * n(x * f, y * f); t += a; a *= 0.5; f *= 2; } return s / t; };
+  }
+  function paintPhoto(r, cloud, sar, o) {
+    const W = 192, c = document.createElement('canvas');
+    c.width = c.height = W;
+    const g = c.getContext('2d');
+    const seed = hashStr(r.id + r.name);
+    const N = noise2(seed), C = noise2(seed + (o ? Math.floor(o.t / 3600000) : 7));
+    const rnd = D.mulberry32(seed);
+    const img = g.createImageData(W, W), d = img.data;
+    const type = r.type;
+    // field patchwork for farmland-like types
+    const fieldCols = type === 'drought' ? [[196, 170, 120], [178, 150, 104], [210, 188, 140], [160, 140, 100]]
+      : [[96, 140, 64], [128, 160, 72], [176, 168, 96], [84, 120, 60], [150, 130, 80]];
+    const cell = 14 + rnd() * 10, tilt = rnd() * 0.5 - 0.25;
+    for (let y = 0; y < W; y++) {
+      for (let x = 0; x < W; x++) {
+        const u = x / W, v = y / W, n = N(u * 6, v * 6, 4), n2 = N(u * 22 + 9, v * 22, 2);
+        let R, G, B;
+        const sea = (type === 'coast' || type === 'cyclone' || type === 'volcano') ? (type === 'volcano' ? Math.hypot(u - 0.5, v - 0.5) > 0.18 + n * 0.12 : u + (n - 0.5) * 0.5 > 0.62) : false;
+        const lake = (type === 'water' || type === 'flood') && N(u * 2.5 + 3, v * 2.5, 3) > (type === 'flood' ? 0.48 : 0.58);
+        if (sea) { R = 20 + n * 20; G = 70 + n * 40; B = 120 + n * 50; }
+        else if (lake) { R = type === 'flood' ? 120 + n * 30 : 30 + n * 20; G = type === 'flood' ? 100 + n * 20 : 70 + n * 30; B = type === 'flood' ? 70 : 100 + n * 40; }
+        else if (type === 'urban') {
+          const gx = (x + y * 0.15) % 18, gy = (y - x * 0.1) % 22;
+          const road = gx < 2 || gy < 2;
+          const t = 150 + n2 * 50;
+          R = road ? 90 : t; G = road ? 90 : t - 8; B = road ? 95 : t - 20;
+          if (n > 0.66) { R = 70; G = 110; B = 60; }
+        } else if (type === 'glacier' || type === 'ice') {
+          const snow = n > 0.45; R = snow ? 225 + n2 * 25 : 110 + n2 * 40; G = snow ? 232 + n2 * 20 : 105 + n2 * 40; B = snow ? 245 : 100 + n2 * 40;
+        } else if (type === 'forest' || type === 'landslide') {
+          R = 30 + n * 40; G = 70 + n * 60; B = 30 + n * 25;
+          if (type === 'landslide' && Math.abs(Math.sin(u * 3 + n * 4) - v + 0.3) < 0.04 + n2 * 0.03) { R = 150; G = 110; B = 80; }
+        } else if (type === 'energy') {
+          const row = ((y + x * 0.05) % 10) < 6 && u > 0.15 && u < 0.85 && v > 0.15 && v < 0.85;
+          R = row ? 30 : 205 + n * 20; G = row ? 45 : 180 + n * 20; B = row ? 80 : 130 + n * 20;
+        } else {
+          const fx = Math.floor((x + y * tilt) / cell), fy = Math.floor((y - x * tilt) / cell);
+          const col = fieldCols[(((fx * 7 + fy * 13 + (seed & 7)) % fieldCols.length) + fieldCols.length) % fieldCols.length];
+          const k = 0.85 + n2 * 0.3;
+          R = col[0] * k; G = col[1] * k; B = col[2] * k;
+          if ((x + y * tilt) % cell < 1 || (y - x * tilt) % cell < 1) { R *= 0.8; G *= 0.8; B *= 0.8; }
+        }
+        if (type === 'wildfire' && N(u * 9, v * 9, 2) > 0.8) { R = 230; G = 60; B = 20; }
+        if (sar) {
+          // radar: grey; calm water is black, buildings and slopes bright; grainy speckle
+          const lum = 0.3 * R + 0.55 * G + 0.15 * B;
+          let L = sea || lake ? 12 + rnd() * 18 : lum * 0.9 + 20 + (rnd() - 0.5) * 46;
+          if (type === 'urban' && !(sea || lake)) L += 40 * (rnd() > 0.7 ? 1 : 0.3);
+          R = G = B = Math.max(0, Math.min(255, L));
+        } else if (cloud > 0) {
+          const th = 1 - Math.min(1, cloud * 1.1);
+          const edge = (q) => Math.max(0, Math.min(1, (q - th + 0.06) / 0.12));
+          const a = edge(C(u * 3.2, v * 3.2, 5));
+          const shadow = edge(C(u * 3.2 - 0.18, v * 3.2 - 0.12, 5)) * 0.45;   // clouds cast shadows
+          R *= 1 - shadow; G *= 1 - shadow; B *= 1 - shadow * 0.8;
+          const shade = 200 + C(u * 11 + 3, v * 11, 3) * 55;               // lumpy tops
+          R = R * (1 - a) + shade * a; G = G * (1 - a) + shade * a; B = B * (1 - a) + (shade + 8) * a;
+        }
+        const i = (y * W + x) * 4;
+        d[i] = R; d[i + 1] = G; d[i + 2] = B; d[i + 3] = 255;
+      }
+    }
+    g.putImageData(img, 0, 0);
+    if (r.type === 'wildfire' && !sar) {           // smoke plume
+      const gr = g.createLinearGradient(W * 0.4, W * 0.6, W, 0);
+      gr.addColorStop(0, 'rgba(200,190,180,0.0)'); gr.addColorStop(0.3, 'rgba(200,190,180,0.55)'); gr.addColorStop(1, 'rgba(200,190,180,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, W, W);
+    }
+    // metadata stamp, like a real product
+    if (o) {
+      g.fillStyle = 'rgba(0,0,0,0.45)'; g.fillRect(0, W - 16, W, 16);
+      g.fillStyle = '#fff'; g.font = '600 9px "JetBrains Mono", monospace';
+      g.fillText(`${SAT_BY_ID[o.sat].name.split(' ')[0].toUpperCase()} · ${fmtIST(o.t, true).toUpperCase()}`, 5, W - 5);
+    }
+    return c;
+  }
+
+  // ------------------------------------------------------------------
+  // The photo album: one day of pictures, usual way vs AI
+  // ------------------------------------------------------------------
+  function photoFor(o) {
+    const r = S.reqById[o.req], sat = SAT_BY_ID[o.sat];
+    const sar = sat.sensor === 'sar';
+    const cloud = S.day === 'past' ? (o.actTotal === null || o.actTotal === undefined ? (o.actual ? 0.1 : 0.9) : o.actTotal / 100) : (o.fcTotal || 50) / 100;
+    const dark = !sar && o.sunEl < 10;
+    const good = S.day === 'past' ? o.actual === 1 : o.p0 >= 0.5;
+    const holder = document.createElement('div');
+    holder.className = 'img';
+    const painted = paintPhoto(r, dark ? 0 : cloud, sar, o);
+    if (dark) { const g = painted.getContext('2d'); g.fillStyle = 'rgba(0,0,10,0.88)'; g.fillRect(0, 0, 192, 176); }
+    holder.appendChild(painted);
+    // real NASA image of that place that morning (online only, optical only)
+    if (!sar && !dark && S.weather.kind === 'live') {
+      const im = new Image();
+      im.referrerPolicy = 'no-referrer';
+      im.alt = r.name;
+      im.onload = () => { painted.replaceWith(im); im.insertAdjacentHTML('afterend', '<span class="real">NASA photo</span>'); };
+      im.src = L.gibsUrl(r.lat, r.lon, o.t, 45, S.day === 'past');
+    }
+    return { holder, good, sar, dark, cloud };
+  }
+
+  function openAlbum() {
+    // optical photos first (that is where clouds matter), radar after
+    const order = (a, b) => (SAT_BY_ID[a.sat].sensor === 'sar') - (SAT_BY_ID[b.sat].sensor === 'sar') || a.t - b.t;
+    const left = (S.plans.fcfs || []).slice().sort(order);
+    const right = (S.plans.ai || []).slice().sort(order);
+    const past = S.day === 'past';
+    const col = (title, sub, plan, cls) => {
+      const sec = document.createElement('div');
+      sec.className = 'album-col ' + cls;
+      let good = 0;
+      const cards = plan.map((o, i) => {
+        const p = photoFor(o);
+        if (p.good) good++;
+        const r = S.reqById[o.req];
+        const fig = document.createElement('figure');
+        fig.className = 'ph ' + (p.good ? 'good' : 'bad');
+        fig.style.animationDelay = (0.15 + i * 0.07) + 's';
+        fig.appendChild(p.holder);
+        const cap = document.createElement('figcaption');
+        cap.innerHTML = `<b>${r.name}</b><span>${p.sar ? 'radar · ' : ''}${p.dark ? 'after dark · ' : ''}${p.sar ? 'sees through cloud' : `${past ? 'real' : 'forecast'} cloud ${Math.round(p.cloud * 100)}%`}</span><i>${p.good ? '✓ usable' : '✗ wasted'}</i>`;
+        fig.appendChild(cap);
+        return fig;
+      });
+      const urgent = new Set(plan.map((o) => o.req).filter((id) => S.reqById[id].urgency >= 0.6)).size;
+      sec.innerHTML = `<div class="album-head"><span class="eyebrow">${title} <span class="muted">· ${sub}</span></span>
+        <div class="album-stats"><div><b class="count good-n" data-to="${good}">0</b><span>usable photos</span></div>
+        <div><b class="count bad-n" data-to="${plan.length - good}">0</b><span>wasted on clouds or darkness</span></div></div>
+        <span class="muted">${plan.length} photos taken · ${new Set(plan.map((o) => o.req)).size} places · ${urgent} urgent</span></div>`;
+      const grid = document.createElement('div');
+      grid.className = 'album-grid';
+      cards.forEach((c) => grid.appendChild(c));
+      sec.appendChild(grid);
+      return sec;
+    };
+    const box = $('albumBody');
+    box.innerHTML = '';
+    box.appendChild(col('The usual way', 'first come, first served', left, 'usual'));
+    box.appendChild(col('DRISHTI AI', 'GA + neural net + fuzzy', right, 'ai'));
+    $('albumTitle').textContent = `${past ? 'What the satellites actually photographed on' : 'Expected photos for'} ${fmtIST(S.startMs, true).replace(/,? \d\d:\d\d$/, '')}${past ? ' (checked against real clouds)' : ' (from the forecast)'}`;
+    $('album').hidden = false;
+    // count-up numbers
+    box.querySelectorAll('.count').forEach((el) => {
+      const to = +el.dataset.to, t0 = performance.now(), dur = 1400 + to * 40;
+      const tick = (now) => { const k = Math.min(1, (now - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  // One click from opening the app to the album.
+  async function showMe() {
+    if (S.loading) return;
+    $('btnShow').disabled = true;
+    if (S.day !== 'past') {
+      S.loading = true;
+      document.querySelectorAll('[data-day]').forEach((x) => x.classList.toggle('on', x.dataset.day === 'past'));
+      toast('Loading last week: the forecast the planners had, and the clouds that really came…');
+      await loadDay('past');
+      S.loading = false;
+    }
+    if (!S.plans.ai) {
+      toast('AI is planning the day…');
+      await nextFrame(); await nextFrame();
+      setPlanningValues();
+      const ga = new D.GA(S.prob, { pop: 70 });
+      const hist = [ga.best.fit];
+      for (let i = 0; i < 160; i++) { hist.push(ga.step().fit); if (i % 40 === 0) await nextFrame(); }
+      setCanonicalValues();
+      S.aiLabel = 'ANN + fuzzy + GA';
+      finishAI(ga.best.plan, hist);
+    }
+    $('btnShow').disabled = false;
+    openAlbum();
   }
 
   // ------------------------------------------------------------------
@@ -848,6 +1032,9 @@
       renderReqList();
     }));
     $('btnAI').addEventListener('click', runAI);
+    $('btnShow').addEventListener('click', showMe);
+    $('albumClose').addEventListener('click', () => { $('album').hidden = true; });
+    $('albumFly').addEventListener('click', () => { $('album').hidden = true; S.shown = 'ai'; renderAll(); setMode('fly'); });
     $('btnManual').addEventListener('click', () => {
       S.manual = !S.manual;
       $('btnManual').classList.toggle('on', S.manual);
@@ -948,7 +1135,7 @@
       } else if (!tip.matches(':hover')) { tip.hidden = true; cv.style.cursor = ''; }
     });
     window.addEventListener('resize', () => { drawTimeline(); drawGA(); if (S.mode === 'brain') renderBrain(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('detail').hidden = true; S.selectedReq = null; if (S.adding) $('btnAdd').click(); } });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('album').hidden = true; $('detail').hidden = true; S.selectedReq = null; if (S.adding) $('btnAdd').click(); } });
   }
 
   let userN = 1;
@@ -1041,7 +1228,7 @@
     $('loader').classList.add('done');
     setTimeout(() => $('loader').remove(), 900);
     S.globe.flyTo(21, 80, 3.4, 2600);
-    toast(`<b>${S.requests.length} imaging requests</b> waiting, ${S.access.opps.length} satellite passes in the next 48 hours. Press <b>AI plan</b>, or try planning it yourself first.`, 'good', null, 6500);
+    toast(`<b>${S.requests.length} imaging requests</b> waiting, ${S.access.opps.length} satellite passes in the next 48 hours. Press <b>📸 Show me the photos</b> to see what the AI changes.`, 'good', null, 7000);
   }
 
   boot();

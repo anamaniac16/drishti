@@ -65,9 +65,10 @@
   <div class="p-head"><h2>Mission plan <small id="planWindow"></small></h2></div>
   <div class="p-body">
     <div class="section">
+      <button class="btn primary wide show-me" id="btnShow">📸 Show me the photos: usual vs AI</button>
       <div class="two">
         <button class="btn" id="btnManual" title="Click passes on the timeline to build your own plan">Plan it myself</button>
-        <button class="btn primary" id="btnAI">AI plan</button>
+        <button class="btn" id="btnAI">AI plan</button>
       </div>
       <div class="big-claim" id="claim" hidden><b id="claimNum"></b><span id="claimTxt"></span></div>
     </div>
@@ -162,6 +163,18 @@
   <div class="tl-wrap"><canvas id="timeline"></canvas></div>
 </footer>
 
+<section class="album" id="album" hidden>
+  <div class="album-card glass" role="dialog" aria-modal="true" aria-labelledby="albumTitle">
+    <div class="album-top">
+      <h2 id="albumTitle">Photos</h2>
+      <div class="album-actions">
+        <button class="btn small" id="albumFly">▶ Watch the AI fly it</button>
+        <button class="btn small" id="albumClose" aria-label="Close">Close ×</button>
+      </div>
+    </div>
+    <div class="album-body" id="albumBody"></div>
+  </div>
+</section>
 <div class="detail glass" id="detail" hidden></div>
 <div class="hint glass" id="hint" hidden></div>
 <div class="tip" id="tip" hidden></div>
