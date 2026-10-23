@@ -18,6 +18,7 @@
   <div class="brand"><b>DRI<i>SH</i>TI</b><span>दृष्टि</span></div>
   <nav class="modes" aria-label="Mode">
     <button data-mode="plan" class="on">Plan</button>
+    <button data-mode="target" class="hot" title="Click any place: plan the passes, take the pictures, check them">📍 Click a place</button>
     <button data-mode="fly">Fly</button>
     <button data-mode="brain">Brain</button>
   </nav>
@@ -88,6 +89,47 @@
       <h3>Evolution <span class="mono muted" id="gaGen"></span></h3>
       <canvas id="gaChart" width="320" height="70"></canvas>
     </div>
+  </div>
+</aside>
+
+<!-- Click a place: one target, every step visible -->
+<aside class="side right glass mission away" id="mission">
+  <div class="p-head">
+    <h2>Target mission <small id="mTitle">click anywhere on the globe</small></h2>
+    <ol class="msteps" id="mSteps" aria-label="Mission steps">
+      <li>Target</li><li>Clouds</li><li>Routes</li><li>Filter</li><li>Capture</li><li>Check</li><li>Deliver</li>
+    </ol>
+    <div class="m-opts">
+      <label class="field">What's there?
+        <select id="mType">
+          <option value="flood">Flood</option><option value="cyclone">Cyclone</option><option value="wildfire">Fire</option>
+          <option value="landslide">Landslide</option><option value="crop" selected>Crops</option><option value="urban">City</option>
+          <option value="water">Water body</option><option value="glacier">Glacier</option><option value="coast">Coast</option>
+          <option value="forest">Forest</option>
+        </select>
+      </label>
+      <label class="field">Urgency <input type="range" id="mUrg" min="0" max="100" value="80"></label>
+      <div class="field">Speed
+        <div class="filters" id="mSpeed"><button data-s="1" class="on">Watch</button><button data-s="0.25">Fast</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="p-body" id="mBody">
+    <div class="m-intro" id="mIntro">
+      <div class="big-ico" aria-hidden="true">📍</div>
+      <p><b>Click any place on the globe</b> (or a pin). DRISHTI then does the whole job for that one spot, and shows every step while it works:</p>
+      <ol>
+        <li><b>Clouds</b>: live hourly forecast for that exact spot</li>
+        <li><b>Routes</b>: flies every satellite's real orbit 48 h ahead and draws each pass over the spot</li>
+        <li><b>Filter</b>: strikes out passes that are too steep, in the dark, likely cloudy (neural net) or clash with the fleet plan; fuzzy logic ranks the rest</li>
+        <li><b>Capture</b>: the satellites fly the chosen passes and take the pictures</li>
+        <li><b>Check</b>: a fuzzy cloud mask scans every picture, pixel by pixel</li>
+        <li><b>Deliver</b>: the best picture is sent down at the next ground-station contact</li>
+      </ol>
+    </div>
+  </div>
+  <div class="p-foot">
+    <button class="btn wide" id="mAdd" disabled>+ Add this target to the fleet plan</button>
   </div>
 </aside>
 
@@ -201,6 +243,7 @@
 <script src="js/core.js"></script>
 <script src="js/live.js"></script>
 <script src="js/globe.js"></script>
+<script src="js/mission.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

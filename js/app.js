@@ -232,6 +232,7 @@
   async function loadDay(day) {
     S.day = day;
     stopFly();
+    if (window.Mission) window.Mission.reset();
     if (day === 'today') {
       S.startMs = Math.floor(Date.now() / HOUR) * HOUR;
     } else {
@@ -489,8 +490,8 @@
     // metadata stamp, like a real product
     if (o) {
       g.fillStyle = 'rgba(0,0,0,0.45)'; g.fillRect(0, W - 16, W, 16);
-      g.fillStyle = '#fff'; g.font = '600 9px "JetBrains Mono", monospace';
-      g.fillText(`${SAT_BY_ID[o.sat].name.split(' ')[0].toUpperCase()} · ${fmtIST(o.t, true).toUpperCase()}`, 5, W - 5);
+      g.fillStyle = '#fff'; g.font = '600 8px "JetBrains Mono", monospace';
+      g.fillText(`${SAT_BY_ID[o.sat].name.split(' ')[0].toUpperCase()} · ${fmtIST(o.t, true).toUpperCase()}`, 5, W - 5, W - 10);
     }
     return c;
   }
@@ -998,7 +999,10 @@
     document.querySelectorAll('[data-mode]').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
     $('reqPanel').classList.toggle('away', m !== 'plan');
     $('planPanel').classList.toggle('away', m !== 'plan');
+    $('mission').classList.toggle('away', m !== 'target');
     $('brain').hidden = m !== 'brain';
+    $('globe').classList.toggle('targeting', m === 'target');
+    if (m !== 'target' && window.Mission) window.Mission.reset();
     if (m === 'fly') {
       $('detail').hidden = true;
       if (!S.follow) { S.follow = 'carto3'; $('followSat').value = 'carto3'; }
@@ -1008,6 +1012,7 @@
       if (S.flying) stopFly();
       S.globe.follow = null;
       if (m === 'plan') S.globe.flyTo(20, 80, 3.4);
+      if (m === 'target') { S.selectedReq = null; S.globe.flyTo(21, 80, 3.0); }
       if (m === 'brain') { S.globe.flyTo(20, 72, 3.9); renderBrain(); }
     }
     renderDetail();
@@ -1116,6 +1121,15 @@
       if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
       const hit = S.globe.pick(e.clientX, e.clientY);
       if (!hit) return;
+      if (S.mode === 'target') {
+        if (hit.req) window.Mission.start(hit.req.lat, hit.req.lon, hit.req);
+        else if (hit.ground) {
+          const { lat, lon } = hit.ground;
+          if (lat < 0 || lat > 40 || lon < 60 || lon > 100) { toast('Pick a spot over India, its neighbours or its seas: that is where the fleet is planned and the cloud model was trained.', 'bad'); return; }
+          window.Mission.start(lat, lon);
+        }
+        return;
+      }
       if (S.adding && hit.ground) {
         const { lat, lon } = hit.ground;
         if (lat < 5 || lat > 37 || lon < 65 || lon > 98) { toast('Pick a spot over India and its seas: that is where the fleet is being planned.', 'bad'); return; }
@@ -1124,6 +1138,16 @@
     });
     cv.addEventListener('mousemove', (e) => {
       if (S.adding) return;
+      if (S.mode === 'target') {
+        const hit = S.globe.pick(e.clientX, e.clientY);
+        const tip = $('tip');
+        if (hit && hit.ground) {
+          tip.innerHTML = `<b>${window.Mission.placeName(hit.ground.lat, hit.ground.lon).name}</b><div class="muted">${hit.ground.lat.toFixed(2)}°N ${hit.ground.lon.toFixed(2)}°E · click to plan a mission here</div>`;
+          tip.hidden = false;
+          tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+        } else tip.hidden = true;
+        return;
+      }
       const hit = S.globe.pick(e.clientX, e.clientY);
       const tip = $('tip');
       if (hit && hit.req) {
@@ -1139,9 +1163,10 @@
   }
 
   let userN = 1;
-  async function addUserRequest(lat, lon) {
-    const type = $('addType').value;
-    const r = D.makeRequest({ name: `Your ${$('addType').selectedOptions[0].textContent.toLowerCase()} #${userN++}`, lat, lon, type, urgency: +$('addUrg').value / 100, waitDays: 0, source: 'user', detail: 'Added by you' });
+  async function addUserRequest(lat, lon, typeIn, urgIn, nameIn) {
+    const type = typeIn || $('addType').value;
+    const label = ($('addType').querySelector(`option[value="${type}"]`) || $('addType').selectedOptions[0]).textContent.toLowerCase();
+    const r = D.makeRequest({ name: nameIn || `Your ${label} #${userN++}`, lat, lon, type, urgency: urgIn === undefined ? +$('addUrg').value / 100 : urgIn, waitDays: 0, source: 'user', detail: 'Added by you' });
     S.requests.push(r); S.reqById[r.id] = r;
     // weather for the new point (live if possible)
     try {
@@ -1158,7 +1183,7 @@
     rebuildProblem();
     selectReq(r.id, false);
     toast(`<b>${r.name}</b> added · ${acc.opps.length} passes in the next 48 h. Press <b>AI plan</b> to fit it in.`, 'good');
-    $('btnAdd').click();
+    if (S.adding) $('btnAdd').click();
   }
 
   // ------------------------------------------------------------------
@@ -1188,6 +1213,11 @@
   // ------------------------------------------------------------------
   // Boot
   // ------------------------------------------------------------------
+  window.DrishtiApp = {
+    S, SAT_BY_ID, ICONS, fmtIST, toast, paintPhoto, updateClouds, drawTimeline, stopFly,
+    addRequestAt: (lat, lon, type, urgency, name) => addUserRequest(lat, lon, type, urgency, name),
+  };
+
   async function boot() {
     S.globe = new window.Globe($('globe'));
     S.globe.addStations(D.STATIONS);
@@ -1228,7 +1258,7 @@
     $('loader').classList.add('done');
     setTimeout(() => $('loader').remove(), 900);
     S.globe.flyTo(21, 80, 3.4, 2600);
-    toast(`<b>${S.requests.length} imaging requests</b> waiting, ${S.access.opps.length} satellite passes in the next 48 hours. Press <b>📸 Show me the photos</b> to see what the AI changes.`, 'good', null, 7000);
+    toast(`<b>${S.requests.length} imaging requests</b> waiting, ${S.access.opps.length} satellite passes in the next 48 hours. Press <b>📸 Show me the photos</b> to see what the AI changes, or <b>📍 Click a place</b> to send a satellite anywhere.`, 'good', null, 8000);
   }
 
   boot();
