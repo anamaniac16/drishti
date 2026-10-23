@@ -49,19 +49,19 @@
     {
       id: 'carto3', name: 'Cartosat-3', norad: 44804, sensor: 'optical',
       altKm: 509, incDeg: 97.5, ltdnHours: 9.5, phaseDeg: 40,
-      maxRollDeg: 40, slewDegPerS: 2.5, settleS: 10, memory: 14, maxShots: 40,
+      maxRollDeg: 40, slewDegPerS: 2.5, settleS: 10, memory: 7, maxShots: 16,
       resolution: '0.25 m', colour: '#ff9f43',
     },
     {
       id: 'rs2a', name: 'Resourcesat-2A', norad: 41877, sensor: 'optical',
       altKm: 817, incDeg: 98.7, ltdnHours: 10.5, phaseDeg: 200,
-      maxRollDeg: 26, slewDegPerS: 1.0, settleS: 20, memory: 12, maxShots: 30,
+      maxRollDeg: 26, slewDegPerS: 1.0, settleS: 20, memory: 5, maxShots: 12,
       resolution: '5.8 m', colour: '#2ed3b7',
     },
     {
       id: 'eos4', name: 'EOS-04 (radar)', norad: 51656, sensor: 'sar',
       altKm: 529, incDeg: 97.5, ltdnHours: 6.0, phaseDeg: 300,
-      maxRollDeg: 35, slewDegPerS: 1.5, settleS: 15, memory: 8, maxShots: 24,
+      maxRollDeg: 35, slewDegPerS: 1.5, settleS: 15, memory: 4, maxShots: 10,
       resolution: '1 m', colour: '#8c7bff',
     },
   ];
@@ -412,7 +412,7 @@
     this.truth = function (lat, lon, ms) {
       const day = ms / DAY;
       const x = (lon - lon0) / 0.6 + day * 3, y = (lat - lat0) / 0.6;
-      let base = 0.6 * lerpNoise(x / 4, y / 4, day * 0.8) + 0.4 * lerpNoise(x, y, day * 1.7);
+      let base = 0.6 * lerpNoise(x / 4, y / 4, day * 0.8) + 0.4 * lerpNoise(x, y, day * 1.7) - 0.38;
       // late-October pattern: north-east monsoon over the south-east coast and
       // the north-east; dry north-west
       base += 0.35 * Math.exp(-((lat - 12) ** 2) / 40 - ((lon - 80) ** 2) / 30);
@@ -644,6 +644,10 @@
     return { value, expected, wasted, shots: plan.length };
   }
 
+  // Every shot costs power, memory and downlink time, so a shot is only worth
+  // taking if its value clears this bar.
+  const MIN_VALUE = 20, SHOT_COST = 8;
+
   // Genome: one gene per request = index into its opportunity list, or -1.
   function GA(prob, opts) {
     opts = opts || {};
@@ -682,7 +686,7 @@
     for (let r = 0; r < this.R; r++) {
       if (g[r] < 0) continue;
       const o = this.prob.byReq[this.prob.requests[r].id][g[r]];
-      if (o && o.value > 0.5) chosen.push(o);
+      if (o && o.value > MIN_VALUE) chosen.push(o);
     }
     return repair(this.prob, chosen);
   };
@@ -696,7 +700,7 @@
       if (!o || !keep.has(o.id)) g[r] = -1;
     }
     let fit = 0;
-    for (const o of plan) fit += o.value;
+    for (const o of plan) fit += o.value - SHOT_COST;
     return { g, plan, fit };
   };
   GA.prototype.select = function () {
@@ -751,7 +755,7 @@
       if (!list.length) continue;
       let b = list[0];
       for (const o of list) if (o.value > b.value) b = o;
-      if (b.value > 0.5) chosen.push(b);
+      if (b.value > MIN_VALUE) chosen.push(b);
     }
     return repair(prob, chosen);
   }
@@ -772,6 +776,6 @@
     makeOrbit, computeAccess, lookAngle,
     MLP, CloudNet, features, N_FEAT, SyntheticWeather, syntheticTrainingSet, splitSet, evaluateCloud,
     mu, defaultFuzzy, fuzzyEval, fuzzyInputs, crispValue,
-    buildProblem, repair, scorePlan, GA, planFCFS, planGreedy,
+    buildProblem, repair, scorePlan, GA, planFCFS, planGreedy, MIN_VALUE, SHOT_COST,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
