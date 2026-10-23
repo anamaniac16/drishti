@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DRISHTI</title>
+<meta name="description" content="AI mission planner for India's Earth-observation satellites: live orbits, live cloud forecasts and live disaster events, planned with a genetic algorithm, a neural network and fuzzy logic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="globe" tabindex="0" aria-label="3D globe with satellites, orbits, clouds and imaging requests"></canvas>
+
+<header class="top glass">
+  <div class="brand"><b>DRI<i>SH</i>TI</b><span>दृष्टि</span></div>
+  <nav class="modes" aria-label="Mode">
+    <button data-mode="plan" class="on">Plan</button>
+    <button data-mode="fly">Fly</button>
+    <button data-mode="brain">Brain</button>
+  </nav>
+  <div class="modes" aria-label="Day">
+    <button data-day="today" class="on" title="Plan the next 48 hours with live forecasts">Next 48 h</button>
+    <button data-day="past" title="Replay a past day and check against the clouds that actually happened">Past day</button>
+  </div>
+  <div class="chips">
+    <span class="chip" id="chipOrbit"><i></i>Orbits</span>
+    <span class="chip" id="chipCloud"><i></i>Clouds</span>
+    <span class="chip" id="chipEvents"><i></i>Events</span>
+  </div>
+  <span class="clock" id="clock">--</span>
+</header>
+
+<!-- Requests -->
+<aside class="side left glass" id="reqPanel">
+  <div class="p-head">
+    <h2>Requests <small id="reqCount"></small></h2>
+    <div class="filters" id="reqFilters">
+      <button data-f="all" class="on">All</button>
+      <button data-f="event">Live events</button>
+      <button data-f="standing">Standing</button>
+      <button data-f="user">Yours</button>
+    </div>
+  </div>
+  <div class="p-body" id="reqList"></div>
+  <div class="p-foot">
+    <div class="add-row">
+      <label class="field">Type
+        <select id="addType">
+          <option value="flood">Flood</option><option value="cyclone">Cyclone</option><option value="wildfire">Fire</option>
+          <option value="landslide">Landslide</option><option value="crop">Crops</option><option value="urban">City</option>
+          <option value="water">Water body</option><option value="glacier">Glacier</option><option value="coast">Coast</option>
+        </select>
+      </label>
+      <label class="field">Urgency <input type="range" id="addUrg" min="0" max="100" value="70"></label>
+    </div>
+    <button class="btn wide" id="btnAdd">+ Add request on the globe</button>
+  </div>
+</aside>
+
+<!-- Plan -->
+<aside class="side right glass" id="planPanel">
+  <div class="p-head"><h2>Mission plan <small id="planWindow"></small></h2></div>
+  <div class="p-body">
+    <div class="section">
+      <div class="two">
+        <button class="btn" id="btnManual" title="Click passes on the timeline to build your own plan">Plan it myself</button>
+        <button class="btn primary" id="btnAI">AI plan</button>
+      </div>
+      <div class="big-claim" id="claim" hidden><b id="claimNum"></b><span id="claimTxt"></span></div>
+    </div>
+    <div class="section">
+      <h3>Scoreboard <span class="mono muted" id="scoreNote"></span></h3>
+      <table class="score" id="score"></table>
+    </div>
+    <div class="section">
+      <h3>AI engine <span class="mono muted">switch one off and re-plan</span></h3>
+      <div class="toggles">
+        <label class="tog"><span>Neural cloud forecast<small>off = trust the raw weather model</small></span><input type="checkbox" id="useANN" checked><span class="sw"></span></label>
+        <label class="tog"><span>Fuzzy priorities<small>off = fixed weighted sum</small></span><input type="checkbox" id="useFuzzy" checked><span class="sw"></span></label>
+        <label class="tog"><span>Genetic search<small>off = greedy, one pass at a time</small></span><input type="checkbox" id="useGA" checked><span class="sw"></span></label>
+      </div>
+    </div>
+    <div class="section">
+      <h3>Evolution <span class="mono muted" id="gaGen"></span></h3>
+      <canvas id="gaChart" width="320" height="70"></canvas>
+    </div>
+  </div>
+</aside>
+
+<!-- Brain -->
+<section class="brain glass" id="brain" hidden>
+  <div class="p-head">
+    <h2>Inside the AI <small>what each part learned and decided</small></h2>
+    <div class="brain-tabs filters" id="brainTabs">
+      <button data-b="ann" class="on">Cloud neural network</button>
+      <button data-b="fuzzy">Fuzzy priority officer</button>
+    </div>
+  </div>
+  <div class="p-body">
+    <div class="brain-grid" id="brainAnn">
+      <div class="card">
+        <h4>Is the sky clear? Test results</h4>
+        <div class="stat-row">
+          <div class="stat teal"><b id="annAcc">–</b><span>neural network</span></div>
+          <div class="stat dim"><b id="rawAcc">–</b><span>raw weather forecast</span></div>
+        </div>
+        <p class="muted" id="annNote" style="margin:0;font-size:12.5px"></p>
+      </div>
+      <div class="card">
+        <h4>Training loss</h4>
+        <canvas id="annLoss" width="340" height="120"></canvas>
+        <button class="btn small" id="btnRetrain">Train again</button>
+      </div>
+      <div class="card span2">
+        <h4>How sure is it? Forecast cloud vs. predicted chance of a clear shot</h4>
+        <canvas id="annCurve" width="700" height="170"></canvas>
+      </div>
+    </div>
+    <div class="brain-grid" id="brainFuzzy" hidden>
+      <div class="card">
+        <h4>Membership functions</h4>
+        <div class="mf-pick" id="mfPick"></div>
+        <canvas id="mfChart" width="340" height="140"></canvas>
+        <label class="field" id="mfEdit"></label>
+      </div>
+      <div class="card">
+        <h4>Why this shot? <span class="mono muted" id="explainWho"></span></h4>
+        <canvas id="outChart" width="340" height="120"></canvas>
+        <div id="explainIn" class="mono muted" style="font-size:11.5px"></div>
+      </div>
+      <div class="card span2">
+        <h4>Rules <span class="mono muted">click to switch a rule off, then re-plan</span></h4>
+        <div class="rules" id="rules"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<footer class="bottom glass">
+  <div class="tl-head">
+    <h2>48-hour timeline</h2>
+    <div class="tl-legend">
+      <span><i style="background:#2ed3b7"></i>clear pass</span>
+      <span><i style="background:#ff5d73"></i>cloudy pass</span>
+      <span><i style="background:#ff9f43"></i>planned shot</span>
+      <span><i style="background:rgba(255,159,67,.35)"></i>downlink</span>
+      <span><i style="background:rgba(0,0,0,.45)"></i>night over India</span>
+    </div>
+    <div class="tl-ctrl">
+      <button class="btn small" id="btnPlay">▶ Fly the plan</button>
+      <button class="btn small" id="btnNext" title="Jump to just before the next planned shot">Next shot ⏭</button>
+      <select id="speed" aria-label="Speed">
+        <option value="2">2 min/s</option><option value="5" selected>5 min/s</option><option value="20">20 min/s</option><option value="60">1 h/s</option>
+      </select>
+      <select id="followSat" aria-label="Camera"></select>
+    </div>
+  </div>
+  <div class="tl-wrap"><canvas id="timeline"></canvas></div>
+</footer>
+
+<div class="detail glass" id="detail" hidden></div>
+<div class="hint glass" id="hint" hidden></div>
+<div class="tip" id="tip" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<div class="loader" id="loader">
+  <div class="loader-card glass">
+    <div class="title">DRI<i>SH</i>TI</div>
+    <div class="tag">Preparing today's mission for India's Earth-observation fleet</div>
+    <ul class="steps" id="steps">
+      <li data-s="orbit"><span class="d"></span><span>Tracking Cartosat-3, Resourcesat-2A, EOS-04</span><span class="r"></span></li>
+      <li data-s="events"><span class="d"></span><span>Checking NASA for live disasters</span><span class="r"></span></li>
+      <li data-s="cloud"><span class="d"></span><span>Downloading cloud forecasts</span><span class="r"></span></li>
+      <li data-s="train"><span class="d"></span><span>Training the cloud neural network</span><span class="r"></span></li>
+      <li data-s="access"><span class="d"></span><span>Finding every pass over every target</span><span class="r"></span></li>
+    </ul>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<script src="js/geo-data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/live.js"></script>
+<script src="js/globe.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
