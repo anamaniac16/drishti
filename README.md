@@ -14,7 +14,7 @@ techniques that each do a necessary job.
 | Part | Technique | Job |
 | --- | --- | --- |
 | Cloud forecaster | **Artificial neural network** (MLP 12 → 20 → 10 → 1, backprop + Adam) | Learns from four weeks of past forecasts vs. what the sky actually did, then predicts the chance of a clear shot at the exact moment of each pass |
-| Priority officer | **Fuzzy logic** (Mamdani, 5 inputs, 12 rules, centroid) | Scores every imaging opportunity from urgency, waiting time, clear-sky chance, look angle and sensor fit, the way a human planner would |
+| Priority officer | **Fuzzy logic** (Mamdani, 5 inputs, 13 rules, centroid) | Scores every imaging opportunity from urgency, waiting time, clear-sky chance, look angle and sensor fit, the way a human planner would |
 | Mission planner | **Genetic algorithm** (one gene per request, tournament selection, uniform crossover, mutation, elitism, Lamarckian repair) | Chooses which pass to use for each target under slew-time, memory and power limits. NP-hard: millions of possible schedules |
 
 ## Live data

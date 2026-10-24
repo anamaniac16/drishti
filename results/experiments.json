@@ -1,0 +1,823 @@
+{
+ "generatedAt": "2026-10-24T00:04:44.640Z",
+ "planning": {
+  "days": 8,
+  "requestsPerDay": 39,
+  "oppsPerDay": 162.875,
+  "table": [
+   {
+    "plan": "fcfs",
+    "shots": {
+     "mean": 35.125,
+     "sd": 0.5994789404140899
+    },
+    "usable": {
+     "mean": 16.75,
+     "sd": 1.8540496217739157
+    },
+    "wasted": {
+     "mean": 18.375,
+     "sd": 2.2325713874364688
+    },
+    "rate": {
+     "mean": 0.47750350140056025,
+     "sd": 0.058686520844874294
+    },
+    "usableTargets": {
+     "mean": 16.75,
+     "sd": 1.8540496217739157
+    },
+    "urgent": {
+     "mean": 0.025,
+     "sd": 0.06614378277661477
+    }
+   },
+   {
+    "plan": "greedy",
+    "shots": {
+     "mean": 15.625,
+     "sd": 0.8569568250501305
+    },
+    "usable": {
+     "mean": 14,
+     "sd": 1.4142135623730951
+    },
+    "wasted": {
+     "mean": 1.625,
+     "sd": 1.2183492931011204
+    },
+    "rate": {
+     "mean": 0.8959602591036415,
+     "sd": 0.0743842634012046
+    },
+    "usableTargets": {
+     "mean": 14,
+     "sd": 1.4142135623730951
+    },
+    "urgent": {
+     "mean": 0.525,
+     "sd": 0.1984313483298443
+    }
+   },
+   {
+    "plan": "noANN",
+    "shots": {
+     "mean": 26.75,
+     "sd": 0.9682458365518543
+    },
+    "usable": {
+     "mean": 18.875,
+     "sd": 1.7633419974582356
+    },
+    "wasted": {
+     "mean": 7.875,
+     "sd": 2.2043990110685496
+    },
+    "rate": {
+     "mean": 0.7071586284086284,
+     "sd": 0.07914201497142945
+    },
+    "usableTargets": {
+     "mean": 18.875,
+     "sd": 1.7633419974582356
+    },
+    "urgent": {
+     "mean": 0.5499999999999999,
+     "sd": 0.19364916731037085
+    }
+   },
+   {
+    "plan": "noFuzzy",
+    "shots": {
+     "mean": 37.375,
+     "sd": 0.4841229182759271
+    },
+    "usable": {
+     "mean": 19.75,
+     "sd": 3.152380053229623
+    },
+    "wasted": {
+     "mean": 17.625,
+     "sd": 3.119995993587171
+    },
+    "rate": {
+     "mean": 0.5283605974395449,
+     "sd": 0.08350186158225072
+    },
+    "usableTargets": {
+     "mean": 19.75,
+     "sd": 3.152380053229623
+    },
+    "urgent": {
+     "mean": 0.475,
+     "sd": 0.1984313483298443
+    }
+   },
+   {
+    "plan": "ai",
+    "shots": {
+     "mean": 24,
+     "sd": 1.7320508075688772
+    },
+    "usable": {
+     "mean": 19.875,
+     "sd": 2.9341736485763756
+    },
+    "wasted": {
+     "mean": 4.125,
+     "sd": 2.2043990110685496
+    },
+    "rate": {
+     "mean": 0.8267046811883769,
+     "sd": 0.09435995532321083
+    },
+    "usableTargets": {
+     "mean": 19.875,
+     "sd": 2.9341736485763756
+    },
+    "urgent": {
+     "mean": 0.575,
+     "sd": 0.15612494995995999
+    }
+   }
+  ],
+  "rows": [
+   {
+    "seed": 11,
+    "opps": 162,
+    "ann": 0.85,
+    "raw": 0.65625,
+    "fcfs": {
+     "shots": 35,
+     "usable": 15,
+     "wasted": 20,
+     "served": 35,
+     "usableTargets": 15,
+     "urgentGot": 0,
+     "urgentAsked": 5,
+     "rate": 0.42857142857142855
+    },
+    "greedy": {
+     "shots": 16,
+     "usable": 14,
+     "wasted": 2,
+     "served": 16,
+     "usableTargets": 14,
+     "urgentGot": 4,
+     "urgentAsked": 5,
+     "rate": 0.875
+    },
+    "ai": {
+     "shots": 25,
+     "usable": 21,
+     "wasted": 4,
+     "served": 25,
+     "usableTargets": 21,
+     "urgentGot": 4,
+     "urgentAsked": 5,
+     "rate": 0.84
+    },
+    "noANN": {
+     "shots": 26,
+     "usable": 18,
+     "wasted": 8,
+     "served": 26,
+     "usableTargets": 18,
+     "urgentGot": 4,
+     "urgentAsked": 5,
+     "rate": 0.6923076923076923
+    },
+    "noFuzzy": {
+     "shots": 37,
+     "usable": 20,
+     "wasted": 17,
+     "served": 37,
+     "usableTargets": 20,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.5405405405405406
+    }
+   },
+   {
+    "seed": 22,
+    "opps": 166,
+    "ann": 0.8083333333333333,
+    "raw": 0.6458333333333334,
+    "fcfs": {
+     "shots": 36,
+     "usable": 15,
+     "wasted": 21,
+     "served": 36,
+     "usableTargets": 15,
+     "urgentGot": 0,
+     "urgentAsked": 5,
+     "rate": 0.4166666666666667
+    },
+    "greedy": {
+     "shots": 17,
+     "usable": 13,
+     "wasted": 4,
+     "served": 17,
+     "usableTargets": 13,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.7647058823529411
+    },
+    "ai": {
+     "shots": 26,
+     "usable": 20,
+     "wasted": 6,
+     "served": 26,
+     "usableTargets": 20,
+     "urgentGot": 4,
+     "urgentAsked": 5,
+     "rate": 0.7692307692307693
+    },
+    "noANN": {
+     "shots": 28,
+     "usable": 19,
+     "wasted": 9,
+     "served": 28,
+     "usableTargets": 19,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.6785714285714286
+    },
+    "noFuzzy": {
+     "shots": 37,
+     "usable": 20,
+     "wasted": 17,
+     "served": 37,
+     "usableTargets": 20,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.5405405405405406
+    }
+   },
+   {
+    "seed": 33,
+    "opps": 161,
+    "ann": 0.8520833333333333,
+    "raw": 0.6958333333333333,
+    "fcfs": {
+     "shots": 35,
+     "usable": 16,
+     "wasted": 19,
+     "served": 35,
+     "usableTargets": 16,
+     "urgentGot": 0,
+     "urgentAsked": 5,
+     "rate": 0.45714285714285713
+    },
+    "greedy": {
+     "shots": 15,
+     "usable": 13,
+     "wasted": 2,
+     "served": 15,
+     "usableTargets": 13,
+     "urgentGot": 1,
+     "urgentAsked": 5,
+     "rate": 0.8666666666666667
+    },
+    "ai": {
+     "shots": 24,
+     "usable": 19,
+     "wasted": 5,
+     "served": 24,
+     "usableTargets": 19,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.7916666666666666
+    },
+    "noANN": {
+     "shots": 27,
+     "usable": 18,
+     "wasted": 9,
+     "served": 27,
+     "usableTargets": 18,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.6666666666666666
+    },
+    "noFuzzy": {
+     "shots": 37,
+     "usable": 18,
+     "wasted": 19,
+     "served": 37,
+     "usableTargets": 18,
+     "urgentGot": 1,
+     "urgentAsked": 5,
+     "rate": 0.4864864864864865
+    }
+   },
+   {
+    "seed": 44,
+    "opps": 162,
+    "ann": 0.8416666666666667,
+    "raw": 0.7083333333333334,
+    "fcfs": {
+     "shots": 35,
+     "usable": 16,
+     "wasted": 19,
+     "served": 35,
+     "usableTargets": 16,
+     "urgentGot": 1,
+     "urgentAsked": 5,
+     "rate": 0.45714285714285713
+    },
+    "greedy": {
+     "shots": 14,
+     "usable": 12,
+     "wasted": 2,
+     "served": 14,
+     "usableTargets": 12,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.8571428571428571
+    },
+    "ai": {
+     "shots": 23,
+     "usable": 15,
+     "wasted": 8,
+     "served": 23,
+     "usableTargets": 15,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.6521739130434783
+    },
+    "noANN": {
+     "shots": 28,
+     "usable": 18,
+     "wasted": 10,
+     "served": 28,
+     "usableTargets": 18,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.6428571428571429
+    },
+    "noFuzzy": {
+     "shots": 37,
+     "usable": 15,
+     "wasted": 22,
+     "served": 37,
+     "usableTargets": 15,
+     "urgentGot": 1,
+     "urgentAsked": 5,
+     "rate": 0.40540540540540543
+    }
+   },
+   {
+    "seed": 55,
+    "opps": 162,
+    "ann": 0.7791666666666667,
+    "raw": 0.6520833333333333,
+    "fcfs": {
+     "shots": 34,
+     "usable": 21,
+     "wasted": 13,
+     "served": 34,
+     "usableTargets": 21,
+     "urgentGot": 0,
+     "urgentAsked": 5,
+     "rate": 0.6176470588235294
+    },
+    "greedy": {
+     "shots": 16,
+     "usable": 16,
+     "wasted": 0,
+     "served": 16,
+     "usableTargets": 16,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 1
+    },
+    "ai": {
+     "shots": 26,
+     "usable": 24,
+     "wasted": 2,
+     "served": 26,
+     "usableTargets": 24,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.9230769230769231
+    },
+    "noANN": {
+     "shots": 25,
+     "usable": 22,
+     "wasted": 3,
+     "served": 25,
+     "usableTargets": 22,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.88
+    },
+    "noFuzzy": {
+     "shots": 37,
+     "usable": 24,
+     "wasted": 13,
+     "served": 37,
+     "usableTargets": 24,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.6486486486486487
+    }
+   },
+   {
+    "seed": 66,
+    "opps": 170,
+    "ann": 0.7770833333333333,
+    "raw": 0.6229166666666667,
+    "fcfs": {
+     "shots": 36,
+     "usable": 18,
+     "wasted": 18,
+     "served": 36,
+     "usableTargets": 18,
+     "urgentGot": 0,
+     "urgentAsked": 5,
+     "rate": 0.5
+    },
+    "greedy": {
+     "shots": 16,
+     "usable": 16,
+     "wasted": 0,
+     "served": 16,
+     "usableTargets": 16,
+     "urgentGot": 4,
+     "urgentAsked": 5,
+     "rate": 1
+    },
+    "ai": {
+     "shots": 25,
+     "usable": 24,
+     "wasted": 1,
+     "served": 25,
+     "usableTargets": 24,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.96
+    },
+    "noANN": {
+     "shots": 27,
+     "usable": 21,
+     "wasted": 6,
+     "served": 27,
+     "usableTargets": 21,
+     "urgentGot": 4,
+     "urgentAsked": 5,
+     "rate": 0.7777777777777778
+    },
+    "noFuzzy": {
+     "shots": 38,
+     "usable": 25,
+     "wasted": 13,
+     "served": 38,
+     "usableTargets": 25,
+     "urgentGot": 4,
+     "urgentAsked": 5,
+     "rate": 0.6578947368421053
+    }
+   },
+   {
+    "seed": 77,
+    "opps": 162,
+    "ann": 0.8625,
+    "raw": 0.68125,
+    "fcfs": {
+     "shots": 35,
+     "usable": 17,
+     "wasted": 18,
+     "served": 35,
+     "usableTargets": 17,
+     "urgentGot": 0,
+     "urgentAsked": 5,
+     "rate": 0.4857142857142857
+    },
+    "greedy": {
+     "shots": 16,
+     "usable": 15,
+     "wasted": 1,
+     "served": 16,
+     "usableTargets": 15,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.9375
+    },
+    "ai": {
+     "shots": 21,
+     "usable": 19,
+     "wasted": 2,
+     "served": 21,
+     "usableTargets": 19,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.9047619047619048
+    },
+    "noANN": {
+     "shots": 27,
+     "usable": 19,
+     "wasted": 8,
+     "served": 27,
+     "usableTargets": 19,
+     "urgentGot": 1,
+     "urgentAsked": 5,
+     "rate": 0.7037037037037037
+    },
+    "noFuzzy": {
+     "shots": 38,
+     "usable": 19,
+     "wasted": 19,
+     "served": 38,
+     "usableTargets": 19,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.5
+    }
+   },
+   {
+    "seed": 88,
+    "opps": 158,
+    "ann": 0.80625,
+    "raw": 0.7208333333333333,
+    "fcfs": {
+     "shots": 35,
+     "usable": 16,
+     "wasted": 19,
+     "served": 35,
+     "usableTargets": 16,
+     "urgentGot": 0,
+     "urgentAsked": 5,
+     "rate": 0.45714285714285713
+    },
+    "greedy": {
+     "shots": 15,
+     "usable": 13,
+     "wasted": 2,
+     "served": 15,
+     "usableTargets": 13,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.8666666666666667
+    },
+    "ai": {
+     "shots": 22,
+     "usable": 17,
+     "wasted": 5,
+     "served": 22,
+     "usableTargets": 17,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.7727272727272727
+    },
+    "noANN": {
+     "shots": 26,
+     "usable": 16,
+     "wasted": 10,
+     "served": 26,
+     "usableTargets": 16,
+     "urgentGot": 3,
+     "urgentAsked": 5,
+     "rate": 0.6153846153846154
+    },
+    "noFuzzy": {
+     "shots": 38,
+     "usable": 17,
+     "wasted": 21,
+     "served": 38,
+     "usableTargets": 17,
+     "urgentGot": 2,
+     "urgentAsked": 5,
+     "rate": 0.4473684210526316
+    }
+   }
+  ]
+ },
+ "gaCurve": [
+  0.7533099989787874,
+  0.7667514281251357,
+  0.7816334042186202,
+  0.8049760882098206,
+  0.8159930820814906,
+  0.8286051799647773,
+  0.844865346157303,
+  0.864982514667368,
+  0.8784513802108738,
+  0.8881339065663743,
+  0.900612761740178,
+  0.9163361846239858,
+  0.9258817398282344,
+  0.9306537968474072,
+  0.9334052058637367,
+  0.9403576882164932,
+  0.9425941244005186,
+  0.9476120830490621,
+  0.9529923154198638,
+  0.9571437968985483,
+  0.9587850278024423,
+  0.9600945310188718,
+  0.9615876500172253,
+  0.9622406843722018,
+  0.9622406843722018,
+  0.9630361948669071,
+  0.9647936952872773,
+  0.9673117352002243,
+  0.9685011338692061,
+  0.9705499861774729,
+  0.9718705397292476,
+  0.9718705397292476,
+  0.9718705397292476,
+  0.9721145080163173,
+  0.9729734282223836,
+  0.9729734282223836,
+  0.9740753212485749,
+  0.974117585370236,
+  0.974117585370236,
+  0.974117585370236,
+  0.974117585370236,
+  0.9749641930599013,
+  0.9772937930567429,
+  0.9777196648822486,
+  0.9777196648822486,
+  0.9791745182587827,
+  0.9806535191837111,
+  0.9806535191837111,
+  0.9811473309044376,
+  0.9824074862251436,
+  0.9824074862251436,
+  0.9853274762522493,
+  0.9858754855384454,
+  0.9858754855384454,
+  0.9875190572188841,
+  0.9875190572188841,
+  0.9884854961511957,
+  0.9892931065727448,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9901547865207398,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9903540450438978,
+  0.9904590583072334,
+  0.9904590583072334,
+  0.9904590583072334,
+  0.9917484525611726,
+  0.9917484525611726,
+  0.9917484525611726,
+  0.9917484525611726,
+  0.9917484525611726,
+  0.9917484525611726,
+  0.991850302368068,
+  0.991850302368068,
+  0.991850302368068,
+  0.991850302368068,
+  0.991850302368068,
+  0.991850302368068,
+  0.9918886302135987,
+  0.9918886302135987,
+  0.9918886302135987,
+  0.9918886302135987,
+  0.9918886302135987,
+  0.9918886302135987,
+  0.9954514306485751,
+  0.9954514306485751,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9954707959715393,
+  0.9960222592774419,
+  0.9960222592774419,
+  0.9960222592774419,
+  0.9967757226358519,
+  0.9967757226358519,
+  0.9969127892714457,
+  0.9969127892714457,
+  0.9980050271862313,
+  0.9980472913078925,
+  0.9980472913078925,
+  0.9980472913078925,
+  0.9980472913078925,
+  0.9988484390813808,
+  0.9988484390813808,
+  1,
+  1,
+  1,
+  1
+ ],
+ "ann": {
+  "acc": 0.8221354166666667,
+  "accSd": 0.03162856637499556,
+  "raw": 0.6729166666666667,
+  "brierAnn": 0.12410007409941012,
+  "brierRaw": 0.22532210321283755,
+  "nTest": 480
+ },
+ "mission": {
+  "spots": 60,
+  "funnel": [
+   10.166666666666666,
+   4.233333333333333,
+   2.85,
+   2.25,
+   2.25,
+   2.1,
+   1.4166666666666667
+  ],
+  "labels": [
+   "Overflights",
+   "Tilt limit",
+   "Daylight",
+   "Clouds (ANN)",
+   "Fuzzy value",
+   "Free satellite",
+   "Shots"
+  ],
+  "shotsMean": 1.4166666666666667,
+  "usableMean": 1.2333333333333334,
+  "noShotPct": 0.03333333333333333,
+  "atLeastOneUsable": 0.9666666666666667,
+  "shotUsableRate": 0.8705882352941177,
+  "latencyMedianH": 19.405555555555555,
+  "latencyMinH": 6.1722222222222225,
+  "latencyMaxH": 43.172222222222224
+ },
+ "tests": [
+  {
+   "name": "Orbit period matches Kepler for each satellite",
+   "pass": true,
+   "detail": "Cartosat-3 94.63 min (Kepler 94.65); Resourcesat-2A 101.10 min (Kepler 101.08); EOS-04 (radar) 95.07 min (Kepler 95.07)"
+  },
+  {
+   "name": "Pass timing does not depend on the 20 s time step (vs 5 s)",
+   "pass": true,
+   "detail": "19/19 passes matched (5 s: 19), worst timing difference 10 s"
+  },
+  {
+   "name": "Optical passes in daylight sit near the satellite's design local time",
+   "pass": true,
+   "detail": "Cartosat-3 9.5 h (design 9.5 h); Resourcesat-2A 10.4 h (design 10.5 h)"
+  },
+  {
+   "name": "Fuzzy value: no rule-coverage holes, rises with urgency, near-monotone in clear sky",
+   "pass": true,
+   "detail": "420 input curves, 41 points each: no holes, largest dip 2.2 points; low urgency 55 vs high 71"
+  },
+  {
+   "name": "Every plan obeys slew, memory, power and one-shot-per-target limits",
+   "pass": true,
+   "detail": "checked independently on 32 plans"
+  }
+ ],
+ "runtimeS": 22.623
+}
