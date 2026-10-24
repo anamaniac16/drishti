@@ -539,6 +539,9 @@
         { on: true, if: [['quality', 'oblique'], ['urgency', 'low']], then: 'low' },
         { on: true, if: [['fit', 'poor']], then: 'useless' },
         { on: true, if: [['fit', 'good'], ['clear', 'clear'], ['quality', 'fair']], then: 'medium' },
+        // added after testing: without it a medium-urgency shot under a clear sky
+        // at an oblique angle fired no rule at all and scored 0
+        { on: true, if: [['urgency', 'medium'], ['clear', 'clear']], then: 'medium' },
       ],
     };
   }
